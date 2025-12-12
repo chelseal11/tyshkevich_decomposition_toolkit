@@ -497,12 +497,12 @@
   <body>
     <div id="start-screen">
       <button class="active" onclick="showAbout()">About</button>
+      <button onclick="showComposeGraphs()">Compose Graphs</button>
       <button onclick="showComposeUnigraphs()">Compose Unigraphs</button>
       <button onclick="showRandomUnigraphGenerator()">Random Unigraph Generator</button>
       <button onclick="showDecompose()">Graph Decomposition and Unigraph Detection Tool</button>
       <button onclick="showDecomposeV2()">Distinguishing Number and Fixing Number</button>
-      <button onclick="showCliqueNumbers()">Clique size, Independence number, vertex cover number and chromatic number</button>
-      <button onclick="showComposeGraphs()">Compose Graphs</button>
+      <button onclick="showCliqueNumbers()">Clique size, independence number, vertex cover number and chromatic number</button>
     </div>
 
     <div id="about">
@@ -553,7 +553,7 @@
       </div>
 
       <div style="margin-bottom: 20px;">
-        <h4>5. Clique size, Independence number, vertex cover number and chromatic number</h4>
+        <h4>5. Clique size, independence number, vertex cover number and chromatic number</h4>
         <p>
           Decompose a graph (provided as a degree sequence) into its basic components and compute
           fundamental graph properties: clique size, independence number, vertex cover number, and
@@ -783,7 +783,7 @@
     <div id="clique-numbers" class="hidden">
       <div class="content-wrapper">
         <div class="main-content">
-          <h2>Clique size, Independence number, vertex cover number and chromatic number</h2>
+          <h2>Clique size, independence number, vertex cover number and chromatic number</h2>
           <p>Decompose a graph into its basic components:</p>
 
           <div style="margin-bottom: 24px; margin-top: 20px;">
@@ -1343,7 +1343,7 @@
       };
 
       const TRANSFORMATION_OPTIONS = {
-        'standard': 'Standard',
+        'original': 'Original',
         'inverse': 'Inverse',
         'complement': 'Complement',
         'inverseComplement': 'Complement of Inverse'
@@ -1701,7 +1701,7 @@
 
       function generateTextCliqueNumbers(degreeSequence) {
         const [isGraphUnigraph, uniLabel, uniType, uniParams, newDegreeSequence] = isComponent(degreeSequence);
-        const degSequenceToDisplay = newDegreeSequence || degreeSequence;
+        const degSequenceToDisplay = degreeSequence;
         if (!degSequenceToDisplay) throwError("degSequenceToDisplay is undefined");
         const degreeSequenceText = "Degree Sequence: " + formatResult(degSequenceToDisplay) + "<br>";
         const hasCompactedParam = uniParams.compacted !== undefined;
@@ -1715,8 +1715,7 @@
         const independenceNumberString = "Independence Number: " + independenceNumberResult + "<br>";
         const numVertices = countVertices(degSequenceToDisplay);
         const vertexCoverNumberString = "Vertex Cover Number: " + (numVertices - independenceNumberResult) + "<br>";
-        const isC5 =  Object.values(degreeSequence)[0] === 5 && Number(Object.keys(degreeSequence)[0]) === 2;
-        const chromaticNumberString = "Chromatic Number: " + (isC5 ? cliqueNumberResult + 1 : cliqueNumberResult);
+        const chromaticNumberString = "Chromatic Number: " + (uniLabel === "C5" ? cliqueNumberResult + 1 : uniLabel === "SVG" ? 1 : cliqueNumberResult);
         const text = isGraphUnigraph ? `${typeString}${paramsString}${degreeSequenceText}${cliqueNumberString}${independenceNumberString}${vertexCoverNumberString}${chromaticNumberString}` : `${degreeSequenceText}`;
         return [text, isGraphUnigraph, cliqueNumberResult, independenceNumberResult];
       }
@@ -1878,7 +1877,7 @@
 
       function applyTransformation(degreeSequence, transformationType, graphType) {
         switch (transformationType) {
-          case 'standard':
+          case 'original':
             return degreeSequence;
           case 'inverse':
             return calculateInverse(degreeSequence);
@@ -1995,7 +1994,7 @@
 
         const paramValues = { m: M, l: L, p: P, q: Q, q1: Q1, q2: Q2 };
 
-        // Validate standard parameters
+        // Validate original parameters
         for (const validation of config.validation) {
           const value = paramValues[validation.param];
           if (!value) throwError("value is undefined");
@@ -2655,9 +2654,7 @@
         const cliqueNumberText = "Clique Number: " + reversedHashComponentsCliqueNumber;
         const independenceNumberText = "Independence Number: " + reversedHashComponentsIndependenceNumber;
         const degreeSequence = convertStringToHashmap(input);
-        console.log("degreeSequence: ", degreeSequence);
         const numVertices = countVertices(degreeSequence);
-        console.log("numVertices: ", numVertices);
         const vertexCoverNumberText = "Vertex Cover Number: " + (numVertices - reversedHashComponentsIndependenceNumber);
         const gSubZero = reversedHashComponents[0];
         const gSubZeroisC5 = Object.values(gSubZero)[0] === 5 && Number(Object.keys(gSubZero)[0]) === 2;
@@ -2997,9 +2994,9 @@
         if (!splitGraph) throwError("splitGraph is undefined");
         const [splitGraphResult, newInput] = splitGraph;
         if (splitGraphResult) {
-          const [standardSplitComponentResult, standardSplitComponentType, standardSplitComponentParams] = isSplitComponent(newInput);
-          if (standardSplitComponentResult) {
-            return [true, standardSplitComponentType, "Standard", standardSplitComponentParams, newInput];
+          const [originalSplitComponentResult, originalSplitComponentType, originalSplitComponentParams] = isSplitComponent(newInput);
+          if (originalSplitComponentResult) {
+            return [true, originalSplitComponentType, "Original", originalSplitComponentParams, newInput];
           }
           const inverse = calculateInverse(newInput);
           const [inverseSplitComponentResult, inverseSplitComponentType, inverseSplitComponentParams] = isSplitComponent(inverse);
@@ -3020,7 +3017,7 @@
         } else {
           const [nonSplitComponentResult, nonSplitComponentType, nonSplitComponentParams] = isNonSplitComponent(input);
           if (nonSplitComponentResult) {
-            return [true, nonSplitComponentType, "Standard", nonSplitComponentParams, input];
+            return [true, nonSplitComponentType, "Original", nonSplitComponentParams, input];
           }
           const complement = calculateComplement(input);
           const [inverseNonSplitComponentResult, inverseNonSplitComponentType, inverseNonSplitComponentParams] = isNonSplitComponent(complement);
