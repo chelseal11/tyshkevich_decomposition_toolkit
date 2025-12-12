@@ -1667,14 +1667,15 @@
       //   }
       // }
 
-      function generateText(degreeSequence) {
+      function generateText(degreeSequence, isgSubZero) {
         const [isGraphUnigraph, uniLabel, uniType, uniParams, newDegreeSequence] = isComponent(degreeSequence);
         const degSequenceToDisplay = newDegreeSequence || degreeSequence;
         if (!degSequenceToDisplay) throwError("degSequenceToDisplay is undefined");
-        const degreeSequenceText = "Degree Sequence: " + formatResult(degSequenceToDisplay) + "<br>";
+        const gSubZeroAndIsSVG = isgSubZero && uniLabel === "SVG" && countVertices(degSequenceToDisplay) === 1;
+        const degreeSequenceText = "Degree Sequence: " + (gSubZeroAndIsSVG ? "0^1" : formatResult(degSequenceToDisplay)) + "<br>";
         const hasCompactedParam = uniParams.compacted !== undefined;
         const isCompacted = hasCompactedParam && uniParams.compacted;
-        const paramsString = paramsText(uniParams);
+        const paramsString = paramsText(uniParams, gSubZeroAndIsSVG);
         const distinguishingNumberResult = distinguishingNumber(uniLabel, uniType, uniParams, degSequenceToDisplay);
         const hasDistinguishingNumber = distinguishingNumberResult !== undefined;
         const distinguishingNumberString = hasDistinguishingNumber ? "Distinguishing Number: " + distinguishingNumberResult + "<br>" : "";
@@ -1686,34 +1687,32 @@
       }
 
       // Basic version for v1: no distinguishing/fixing numbers
-      function generateTextBasic(degreeSequence) {
+      function generateTextBasic(degreeSequence, isgSubZero) {
         const [isGraphUnigraph, uniLabel, uniType, uniParams, newDegreeSequence] = isComponent(degreeSequence);
-        const degSequenceToDisplay = newDegreeSequence || degreeSequence;
-        if (!degSequenceToDisplay) throwError("degSequenceToDisplay is undefined");
-        const degreeSequenceText = "Degree Sequence: " + formatResult(degSequenceToDisplay) + "<br>";
+        const gSubZeroAndIsSVG = isgSubZero && uniLabel === "SVG";
+        const degreeSequenceToDisplay = gSubZeroAndIsSVG ? "0^1" : formatResult(newDegreeSequence || degreeSequence);
+        const degreeSequenceText = "Degree Sequence: " + degreeSequenceToDisplay + "<br>";
         const hasCompactedParam = uniParams.compacted !== undefined;
         const isCompacted = hasCompactedParam && uniParams.compacted;
-        const paramsString = paramsText(uniParams);
-        const hasParams = paramsString != undefined;
+        const paramsString = paramsText(uniParams, gSubZeroAndIsSVG);
         const typeString = typeText(uniType, uniLabel, isCompacted);
         return [`${typeString}${paramsString}${degreeSequenceText}`, isGraphUnigraph];
       }
 
-      function generateTextCliqueNumbers(degreeSequence) {
+      function generateTextCliqueNumbers(degreeSequence, isgSubZero) {
         const [isGraphUnigraph, uniLabel, uniType, uniParams, newDegreeSequence] = isComponent(degreeSequence);
-        const degSequenceToDisplay = degreeSequence;
-        if (!degSequenceToDisplay) throwError("degSequenceToDisplay is undefined");
-        const degreeSequenceText = "Degree Sequence: " + formatResult(degSequenceToDisplay) + "<br>";
+        if (!degreeSequence) throwError("degreeSequence is undefined");
+        const degreeSequenceToDisplay = isgSubZero && uniLabel === "SVG" ? "0^1" : formatResult(newDegreeSequence || degreeSequence);
+        const degreeSequenceText = "Degree Sequence: " + degreeSequenceToDisplay + "<br>";
         const hasCompactedParam = uniParams.compacted !== undefined;
         const isCompacted = hasCompactedParam && uniParams.compacted;
-        const paramsString = paramsText(uniParams);
-        const hasParams = paramsString != undefined;
+        const paramsString = paramsText(uniParams, isgSubZero && uniLabel === "SVG");
         const typeString = typeText(uniType, uniLabel, isCompacted);
-        const cliqueNumberResult = cliqueNumber(uniLabel, uniParams, degSequenceToDisplay);
+        const cliqueNumberResult = isgSubZero && uniLabel === "SVG" ? 1 : cliqueNumber(uniLabel, uniParams, degreeSequence);
         const cliqueNumberString = "Clique Number: " + cliqueNumberResult + "<br>";
-        const independenceNumberResult = independenceNumber(uniLabel, uniParams, degSequenceToDisplay);
+        const independenceNumberResult = independenceNumber(uniLabel, uniParams, degreeSequence);
         const independenceNumberString = "Independence Number: " + independenceNumberResult + "<br>";
-        const numVertices = countVertices(degSequenceToDisplay);
+        const numVertices = countVertices(degreeSequence);
         const vertexCoverNumberString = "Vertex Cover Number: " + (numVertices - independenceNumberResult) + "<br>";
         const chromaticNumberString = "Chromatic Number: " + (uniLabel === "C5" ? cliqueNumberResult + 1 : uniLabel === "SVG" ? 1 : cliqueNumberResult);
         const text = isGraphUnigraph ? `${typeString}${paramsString}${degreeSequenceText}${cliqueNumberString}${independenceNumberString}${vertexCoverNumberString}${chromaticNumberString}` : `${degreeSequenceText}`;
@@ -1762,8 +1761,11 @@
         }
       }
 
-      function paramsText(uniParams) {
+      function paramsText(uniParams, isgSubZeroAndIsSVG) {
         let paramsString = "";
+        if (isgSubZeroAndIsSVG) {
+          return "";
+        }
         if (uniParams !== "None") {
           Object.entries(uniParams).forEach(([key, value]) => {
             if (key == "compacted") {
@@ -2329,7 +2331,6 @@
         const reversedHashComponents = hashComponents.reverse();
         const minimalComponents = minimalDecompose(reversedHashComponents);
         const [minimalComponentsText, minimalComponentsIsUnigraph, minimalComponentsDistinguishingNumber, minimalComponentsFixingNumber] = formatComponents(minimalComponents);
-        const [reversedHashComponentsText] = formatComponents(reversedHashComponents);
         document.getElementById('decompose-graph-v2-result-compacted').innerHTML = "Compacted components: <br><br>" + minimalComponentsText;
         const distinguishingNumberText = minimalComponentsIsUnigraph ? "Distinguishing number: " + minimalComponentsDistinguishingNumber : "";
         const fixingNumberText = minimalComponentsIsUnigraph ? "Fixing number: " + minimalComponentsFixingNumber : "";
@@ -2530,7 +2531,7 @@
         let index = 1;
         let fixingNumber = 0;
         components.forEach(component => {
-          const [text, isGraphUnigraph, distinguishingNumberResult, fixingNumberResult] = generateText(component);
+          const [text, isGraphUnigraph, distinguishingNumberResult, fixingNumberResult] = generateText(component, component === components[0]);
           isUnigraph = isUnigraph && isGraphUnigraph;
           distinguishingNumber = Math.max(distinguishingNumber, distinguishingNumberResult);
           fixingNumber += fixingNumberResult;
@@ -2548,7 +2549,7 @@
         let isUnigraph = true;
         let index = 1;
         components.forEach(component => {
-          const [text, isGraphUnigraph] = generateTextBasic(component);
+          const [text, isGraphUnigraph] = generateTextBasic(component, component === components[0]);
           isUnigraph = isUnigraph && isGraphUnigraph;
           result += `Component ${index}:<br>${text}`;
           if (index < components.length) {
@@ -2566,7 +2567,7 @@
         let independenceNumber = 0;
         let index = 1;
         components.forEach(component => {
-          const [text, isGraphUnigraph, cliqueNumberResult, independenceNumberResult] = generateTextCliqueNumbers(component);
+          const [text, isGraphUnigraph, cliqueNumberResult, independenceNumberResult] = generateTextCliqueNumbers(component, component === components[0]);
           isUnigraph = isUnigraph && isGraphUnigraph;
           cliqueNumber += cliqueNumberResult;
           independenceNumber += independenceNumberResult;
@@ -2657,7 +2658,7 @@
         const numVertices = countVertices(degreeSequence);
         const vertexCoverNumberText = "Vertex Cover Number: " + (numVertices - reversedHashComponentsIndependenceNumber);
         const gSubZero = reversedHashComponents[0];
-        const gSubZeroisC5 = Object.values(gSubZero)[0] === 5 && Number(Object.keys(gSubZero)[0]) === 2;
+        const gSubZeroisC5 = isC5(gSubZero)[0];
         const chromaticNumber = gSubZeroisC5 ? reversedHashComponentsCliqueNumber + 1 : reversedHashComponentsCliqueNumber;
         const chromaticNumberText = "Chromatic Number: " + chromaticNumber;
         document.getElementById('clique-numbers-result-unigraph').innerHTML = !reversedHashComponentsIsUnigraph ? "Is Unigraph: false" : "Is unigraph: true" +  "<br>" + cliqueNumberText + "<br>" + independenceNumberText + "<br>" + vertexCoverNumberText + "<br>" + chromaticNumberText;
