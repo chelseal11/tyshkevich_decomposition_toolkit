@@ -3077,21 +3077,21 @@
           return [false, "None"];
         }
         const orderedDs = ds.sort((a, b) => b - a);
-        const l = Number(orderedDs[0]);
+        const d1 = Number(orderedDs[0]);
         const r1 = input[d1];
         const d2 = Number(orderedDs[1]);
         const r2 = input[d2];
         if (r1 !== 1 || d2 !== 1) {
           return [false, "None"];
         }
-        if ((r2 - l) % 2 !== 0) {
+        if ((r2 - d1) % 2 !== 0) {
           return [false, "None"];
         }
-        const m = (r2 - l) / 2;
+        const m = (r2 - d1) / 2;
         if (m < 1 || l < 1) {
           return [false, "None"];
         }
-        return [true, {l: l, m: m}];
+        return [true, {l: d1, m: m}];
       }
 
       function isU3(input) {
