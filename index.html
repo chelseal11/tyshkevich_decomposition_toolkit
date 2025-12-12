@@ -986,8 +986,8 @@
           inputs: ['partition'],
           validation: [],
           degSequence: ({partition}) => {
-            if (partition !== 'A' && partition !== 'B') throwError("Invalid parameter partition: " + partition);
-            if (partition === 'A') {
+            if (partition !== 'K1' && partition !== 'S1') throwError("Invalid parameter partition: " + partition);
+            if (partition === 'K1') {
               return {
                 A: {0: 1},
                 B: {}
@@ -1000,7 +1000,7 @@
             }
           },
           potentialVertices: [1],
-          potentialParamsByNumVertices: (numVertices) => ([{partition: 'A'}, {partition: 'B'}]),
+          potentialParamsByNumVertices: (numVertices) => ([{partition: 'K1'}, {partition: 'S1'}]),
           distinguishingNumber: (degreeSequence) => {
             if (degreeSequence.A === undefined || degreeSequence.B === undefined) {
               throwError("degreeSequence is undefined");
@@ -1367,8 +1367,8 @@
             <div id="input-${inputType}-${graph_num}" class="hidden" style="margin-top: 10px;">
               <label for="${inputType}-${graph_num}">${inputLabels[inputType]}</label>
               <select id="${inputType}-${graph_num}" name="${inputType}" onchange="updateDegreeSequenceDisplay(${graph_num})">
-                <option value="A">Partition A</option>
-                <option value="B">Partition B</option>
+                <option value="K1">K1</option>
+                <option value="S1">S1</option>
               </select>
             </div>
           `;
@@ -1582,7 +1582,7 @@
             const el = document.getElementById(`${input}-${graph_num}`);
             if (!el) return false;
             if (input === 'partition') {
-              if (el.value !== 'A' && el.value !== 'B') return false;
+              if (el.value !== 'K1' && el.value !== 'S1') return false;
             } else {
               if (el.value === '' || el.value === null || el.value === undefined) return false;
             }
@@ -3187,19 +3187,19 @@
           const d1 = Number(dA[0]);
           const r1 = rA[0];
           if (d1 == 0 || r1 == 1) {
-            return [true, {partition: "A", compacted: false}];
+            return [true, {partition: "K1", compacted: false}];
           }
           if (r1 > d1 && r1 - d1 == 1) {
-            return [true, {partition: "A", compacted: true}];
+            return [true, {partition: "K1", compacted: true}];
           }
         } else if (dA.length === 0 && dB.length === 1) {
           const d2 = Number(dB[0]);
           const r2 = rB[0];
           if (d2 == 0 || r2 == 1) {
-            return [true, {partition: "B", compacted: false}];
+            return [true, {partition: "S1", compacted: false}];
           }
           if (d2 == 2 && r2 > 1) {
-            return [true, {partition: "B", compacted: true}];
+            return [true, {partition: "S1", compacted: true}];
           }
         }
         return [false, "None"];
