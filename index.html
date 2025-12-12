@@ -890,9 +890,7 @@
           potentialVertices: [5],
           potentialParamsByNumVertices: (numVertices) => ([{}]),
           distinguishingNumber: () => 3,
-          fixingNumber: () => 2,
-          cliqueNumber: () => 2,
-          independenceNumber: () => 2
+          fixingNumber: () => 2
         },
         'mK2': {
           inputs: ['m'],
@@ -907,11 +905,6 @@
             return (Math.ceil((1 + Math.sqrt(1 + 8*m)) / 2))
           },
           fixingNumber: (m) => {
-            if (!isValidInteger(m)) throwError("Invalid parameter m: " + m);
-            return m;
-          },
-          cliqueNumber: () => 2,
-          independenceNumber: (m) => {
             if (!isValidInteger(m)) throwError("Invalid parameter m: " + m);
             return m;
           }
@@ -949,12 +942,6 @@
             if (!isValidInteger(l)) throwError("Invalid parameter l: " + l);
             return m + l - 1;
           },
-          cliqueNumber: () => 2,
-          independenceNumber: (m, l) => {
-            if (!isValidInteger(m)) throwError("Invalid parameter m: " + m);
-            if (!isValidInteger(l)) throwError("Invalid parameter l: " + l);
-            return m + l;
-          }
         },
         'U3': {
           inputs: ['m'],
@@ -974,11 +961,6 @@
           fixingNumber: (m) => {
             if (!isValidInteger(m)) throwError("Invalid parameter m: " + m);
             return m + 1;
-          },
-          cliqueNumber: () => 3,
-          independenceNumber: (m) => {
-            if (!isValidInteger(m)) throwError("Invalid parameter m: " + m);
-            return m + 2;
           }
         },
         'SVG': {
@@ -1018,12 +1000,6 @@
             const aTotalVertices = Object.values(degreeSequence.A).reduce((acc, curr) => acc + curr, 0);
             const bTotalVertices = Object.values(degreeSequence.B).reduce((acc, curr) => acc + curr, 0);
             return aTotalVertices + bTotalVertices - 1;
-          },
-          cliqueNumber: (degreeSequence) => {
-            return cliqueNumberSplitGraph(degreeSequence);
-          },
-          independenceNumber: (degreeSequence) => {
-            return independenceNumberSplitGraph(degreeSequence);
           }
         },
         'Spq': {
@@ -1069,12 +1045,6 @@
             if (!isValidInteger(q)) throwError("Invalid parameter q: " + q);
             const result = p == 1 ? q - 1 : q * (p - 1);
             return result;
-          },
-          cliqueNumber: (degreeSequence) => {
-            return cliqueNumberSplitGraph(degreeSequence);
-          },
-          independenceNumber: (degreeSequence) => {
-            return independenceNumberSplitGraph(degreeSequence);
           }
         },
         'S2': {
@@ -1142,12 +1112,6 @@
               sum += GRAPH_CONFIG['Spq'].fixingNumber(p, q);
             }
             return sum;
-          },
-          cliqueNumber: (degreeSequence) => {
-            return cliqueNumberSplitGraph(degreeSequence);
-          },
-          independenceNumber: (degreeSequence) => {
-            return independenceNumberSplitGraph(degreeSequence);
           }
         },
         'S3': {
@@ -1195,12 +1159,6 @@
             if (!isValidInteger(q1)) throwError("Invalid parameter q1: " + q1);
             if (!isValidInteger(q2)) throwError("Invalid parameter q2: " + q2);
             return GRAPH_CONFIG['Spq'].fixingNumber(p, q1) + GRAPH_CONFIG['Spq'].fixingNumber(p + 1, q2);
-          },
-          cliqueNumber: (degreeSequence) => {
-            return cliqueNumberSplitGraph(degreeSequence);
-          },
-          independenceNumber: (degreeSequence) => {
-            return independenceNumberSplitGraph(degreeSequence);
           }
         },
         'S4': {
@@ -1242,12 +1200,6 @@
             if (!isValidInteger(p)) throwError("Invalid parameter p: " + p);
             if (!isValidInteger(q)) throwError("Invalid parameter q: " + q);
             return GRAPH_CONFIG['Spq'].fixingNumber(p, 2) + GRAPH_CONFIG['Spq'].fixingNumber(p + 1, q);
-          },
-          cliqueNumber: (degreeSequence) => {
-            return cliqueNumberSplitGraph(degreeSequence);
-          },
-          independenceNumber: (degreeSequence) => {
-            return independenceNumberSplitGraph(degreeSequence);
           }
         }
       };
@@ -1715,13 +1667,14 @@
       function generateTextCliqueNumbers(degreeSequence, isgSubZero) {
         const [isGraphUnigraph, uniLabel, uniType, uniParams, newDegreeSequence] = isComponent(degreeSequence);
         if (!degreeSequence) throwError("degreeSequence is undefined");
-        const degreeSequenceToDisplay = isgSubZero && uniLabel === "SVG" ? "0^1" : formatResult(newDegreeSequence || degreeSequence);
+        const gSubZeroAndIsSVG = isgSubZero && uniLabel === "SVG";
+        const degreeSequenceToDisplay = gSubZeroAndIsSVG ? "0^1" : formatResult(newDegreeSequence || degreeSequence);
         const degreeSequenceText = "Degree Sequence: " + degreeSequenceToDisplay + "<br>";
         const hasCompactedParam = uniParams.compacted !== undefined;
         const isCompacted = hasCompactedParam && uniParams.compacted;
-        const paramsString = paramsText(uniParams, isgSubZero && uniLabel === "SVG");
+        const paramsString = paramsText(uniParams, gSubZeroAndIsSVG);
         const typeString = typeText(uniType, uniLabel, isCompacted);
-        const cliqueNumberResult = isgSubZero && uniLabel === "SVG" ? 1 : cliqueNumber(uniLabel, uniParams, degreeSequence);
+        const cliqueNumberResult = gSubZeroAndIsSVG ? 1 : cliqueNumber(uniLabel, uniParams, degreeSequence);
         const cliqueNumberString = "Clique Number: " + cliqueNumberResult + "<br>";
         const independenceNumberResult = independenceNumber(uniLabel, uniParams, degreeSequence);
         const independenceNumberString = "Independence Number: " + independenceNumberResult + "<br>";
@@ -3280,7 +3233,7 @@
           return [false, "None"];
         }
         const q2 = r1 - q1;
-        const p = d1 - q1 - q2;
+        const p = d1 - r1;
         if (d3 !== (p * q1) + ((p + 1) * q2)) {
           return [false, "None"];
         }
@@ -3414,14 +3367,14 @@
         return true;
       }
 
-      function cliqueNumberSplitGraph(degreeSequence) {
+      function numVerticesinA(degreeSequence) {
         if (!degreeSequence) throwError("degreeSequence is undefined");
         if (degreeSequence.A === undefined) throwError("degreeSequence.A is undefined");
         const aTotalVertices = Object.values(degreeSequence.A).reduce((acc, curr) => acc + curr, 0);
         return aTotalVertices;
       }
 
-      function independenceNumberSplitGraph(degreeSequence) {
+      function numVerticesinB(degreeSequence) {
         if (!degreeSequence) throwError("degreeSequence is undefined");
         if (degreeSequence.B === undefined) throwError("degreeSequence.B is undefined");
         const bTotalVertices = Object.values(degreeSequence.B).reduce((acc, curr) => acc + curr, 0);
@@ -3432,23 +3385,23 @@
         if (!degreeSequence) throwError("degreeSequence is undefined");
         switch (uniLabel) {
           case 'C5':
-            return GRAPH_CONFIG[uniLabel].cliqueNumber();
+            return 2;
           case 'mK2':
-            return GRAPH_CONFIG[uniLabel].cliqueNumber(uniParams.m);
+            return 2;
           case 'U2':
-            return GRAPH_CONFIG[uniLabel].cliqueNumber(uniParams.m, uniParams.l);
+            return 2;
           case 'U3':
-            return GRAPH_CONFIG[uniLabel].cliqueNumber(uniParams.m);
+            return 3;
           case 'Spq':
-            return GRAPH_CONFIG[uniLabel].cliqueNumber(degreeSequence);
+            return numVerticesinA(degreeSequence);
           case 'S2':
-            return GRAPH_CONFIG[uniLabel].cliqueNumber(degreeSequence);
+            return numVerticesinA(degreeSequence);
           case 'S3':
-            return GRAPH_CONFIG[uniLabel].cliqueNumber(degreeSequence);
+            return numVerticesinA(degreeSequence);
           case 'S4':
-            return GRAPH_CONFIG[uniLabel].cliqueNumber(degreeSequence);
+            return numVerticesinA(degreeSequence);
           case 'SVG':
-            return GRAPH_CONFIG[uniLabel].cliqueNumber(degreeSequence);
+            return numVerticesinA(degreeSequence);
           default:
             return undefined;
         }
@@ -3458,23 +3411,23 @@
         if (!degreeSequence) throwError("degreeSequence is undefined");
         switch (uniLabel) {
           case 'C5':
-            return GRAPH_CONFIG[uniLabel].independenceNumber();
+            return 1;
           case 'mK2':
-            return GRAPH_CONFIG[uniLabel].independenceNumber(uniParams.m);
+            return uniParams.m;
           case 'U2':
-            return GRAPH_CONFIG[uniLabel].independenceNumber(uniParams.m, uniParams.l);
+            return uniParams.m + uniParams.l;
           case 'U3':
-            return GRAPH_CONFIG[uniLabel].independenceNumber(uniParams.m);
+            return uniParams.m + 2;
           case 'Spq':
-            return GRAPH_CONFIG[uniLabel].independenceNumber(degreeSequence);
+            return numVerticesinB(degreeSequence);
           case 'S2':
-            return GRAPH_CONFIG[uniLabel].independenceNumber(degreeSequence);
+            return numVerticesinB(degreeSequence);
           case 'S3':
-            return GRAPH_CONFIG[uniLabel].independenceNumber(degreeSequence);
+            return numVerticesinB(degreeSequence);
           case 'S4':
-            return GRAPH_CONFIG[uniLabel].independenceNumber(degreeSequence);
+            return numVerticesinB(degreeSequence);
           case 'SVG':
-            return GRAPH_CONFIG[uniLabel].independenceNumber(degreeSequence);
+            return numVerticesinB(degreeSequence);
           default:
             return undefined;
         }
