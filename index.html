@@ -1364,7 +1364,7 @@
         // Special handling for partition dropdown
         if (inputType === 'partition') {
           return `
-            <div id="input-${inputType}-${graph_num}" class="hidden">
+            <div id="input-${inputType}-${graph_num}" class="hidden" style="margin-top: 10px;">
               <label for="${inputType}-${graph_num}">${inputLabels[inputType]}</label>
               <select id="${inputType}-${graph_num}" name="${inputType}" onchange="updateDegreeSequenceDisplay(${graph_num})">
                 <option value="A">Partition A</option>
@@ -1418,7 +1418,7 @@
         ).join('');
 
         return `
-          <div style="margin-top: 10px;">
+          <div id="transformation-container-${graph_num}" style="margin-top: 10px;">
             <label for="transformation-${graph_num}">Transformation:</label>
             <select id="transformation-${graph_num}" name="transformation-${graph_num}" onchange="updateDegreeSequenceDisplay(${graph_num})">
               ${options}
@@ -1621,6 +1621,19 @@
           config.inputs.forEach(inputType => {
             showInputElement(inputType, graph_num);
           });
+        }
+
+        // Hide transformation options for SVG (single-vertex graph)
+        const transformationContainer = document.getElementById(`transformation-container-${graph_num}`);
+        if (transformationContainer) {
+          if (selection === 'SVG') {
+            transformationContainer.classList.add('hidden');
+            // Reset to original when hidden
+            const transformationSelect = document.getElementById(`transformation-${graph_num}`);
+            if (transformationSelect) transformationSelect.value = 'original';
+          } else {
+            transformationContainer.classList.remove('hidden');
+          }
         }
 
         // Update degree sequence display
