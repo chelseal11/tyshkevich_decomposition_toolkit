@@ -3124,22 +3124,18 @@
           return [false, "None"];
         }
         const orderedDs = ds.sort((a, b) => b - a);
-        const d1 = Number(orderedDs[0]);
+        const l = Number(orderedDs[0]);
         const r1 = input[d1];
         const d2 = Number(orderedDs[1]);
         const r2 = input[d2];
-        if (r1 !== 1 || r2 <= 1 || d2 !== 1) {
+        if (r1 !== 1 || d2 !== 1) {
           return [false, "None"];
         }
-        if ((r2 - d1) % 2 !== 0) {
+        if ((r2 - l) % 2 !== 0) {
           return [false, "None"];
         }
-        const m = (r2 - d1) / 2;
-        if (m < 1) {
-          return [false, "None"];
-        }
-        const l = d1;
-        if (l < 1) {
+        const m = (r2 - l) / 2;
+        if (m < 1 || l < 1) {
           return [false, "None"];
         }
         return [true, {l: l, m: m}];
@@ -3156,14 +3152,14 @@
         const r1 = input[d1];
         const d2 = Number(orderedDs[1]);
         const r2 = input[d2];
-        if (r1 !== 1 || r2 <= 1 || d2 !== 2) {
+        if (r1 !== 1 || d2 !== 2) {
           return [false, "None"];
         }
-        if ((d1 - 2) % 2 !== 0) {
+        if ((d1) % 2 !== 0) {
           return [false, "None"];
         }
         const m = (d1 - 2) / 2;
-        if (m < 1) {
+        if (m < 1 || r2 !== (2 * m) + 3) {
           return [false, "None"];
         }
         return [true, {m: m}];
@@ -3217,15 +3213,14 @@
           return [false, "None"];
         }
         const d1 = Number(dA[0]);
-        const r1 = rA[0];
+        const q = rA[0];
         const d2 = Number(dB[0]);
         const r2 = rB[0];
-        if (r2 % r1 !== 0 || d2 !== 1) {
+        if (r2 % q !== 0 || d2 !== 1) {
           return [false, "None"];
         }
-        const p = r2 / r1;
-        const q = r1;
-        if (p < 1 || q < 2) {
+        const p = r2 / q;
+        if (p < 1 || q < 2 || d1 !== p + q - 1) {
           return [false, "None"];
         }
         return [true, {p: p, q: q}];
@@ -3246,14 +3241,19 @@
         let q = [];
         const n = rA.reduce((a, b) => a + b, 0);
         const orderedDAs = dA.sort((a, b) => b - a);
+        let summationOfpTimesq = 0;
         for (let i = 1; i <= orderedDAs.length; i++) {
           const d = Number(orderedDAs[i - 1]);
           const r = a[d];
           p[i] = d - n + 1;
           q[i] = r;
+          summationOfpTimesq += p[i] * q[i];
           if (p[i - 1] <= p[i]) {
             return [false, "None"];
           }
+        }
+        if (summationOfpTimesq !== rB[0]) {
+          return [false, "None"];
         }
         return [true, {p: p, q: q}];
       }
@@ -3272,16 +3272,18 @@
         const d1 = Number(dA[0]);
         const r1 = rA[0];
         const orderedDBs = dB.sort((a, b) => b - a);
-        const d2 = Number(orderedDBs[0]);
+        const q1 = Number(orderedDBs[0]);
         const r2 = b[d2];
         const d3 = Number(orderedDBs[1]);
         const r3 = b[d3];
         if (r2 !== 1 || d3 !== 1) {
           return [false, "None"];
         }
-        const p = d1 - r1;
-        const q1 = d2;
-        const q2 = r1 - d2;
+        const q2 = r1 - q1;
+        const p = d1 - q1 - q2;
+        if (d3 !== (p * q1) + ((p + 1) * q2)) {
+          return [false, "None"];
+        }
         if (p < 1 || q1 < 2 || q2 < 1) {
           return [false, "None"];
         }
