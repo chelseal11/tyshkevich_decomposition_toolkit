@@ -3225,22 +3225,22 @@
         const d1 = Number(dA[0]);
         const r1 = rA[0];
         const orderedDBs = dB.sort((a, b) => b - a);
-        const q1 = Number(orderedDBs[0]);
+        const d2 = Number(orderedDBs[0]);
         const r2 = b[d2];
         const d3 = Number(orderedDBs[1]);
         const r3 = b[d3];
         if (r2 !== 1 || d3 !== 1) {
           return [false, "None"];
         }
-        const q2 = r1 - q1;
+        const q2 = r1 - d2;
         const p = d1 - r1;
-        if (d3 !== (p * q1) + ((p + 1) * q2)) {
+        if (d3 !== (p * d2) + ((p + 1) * q2)) {
           return [false, "None"];
         }
-        if (p < 1 || q1 < 2 || q2 < 1) {
+        if (p < 1 || d2 < 2 || q2 < 1) {
           return [false, "None"];
         }
-        return [true, {p: p, q1: q1, q2: q2}];
+        return [true, {p: p, q1: d2, q2: q2}];
       }
 
       function isS4(input) {
