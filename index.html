@@ -3088,10 +3088,11 @@
           return [false, "None"];
         }
         const m = (r2 - d1) / 2;
+        const l = d1;
         if (m < 1 || l < 1) {
           return [false, "None"];
         }
-        return [true, {l: d1, m: m}];
+        return [true, {l: l, m: m}];
       }
 
       function isU3(input) {
@@ -3232,9 +3233,10 @@
         if (r2 !== 1 || d3 !== 1) {
           return [false, "None"];
         }
-        const q2 = r1 - d2;
+        const q1 = d2;
+        const q2 = r1 - q1;
         const p = d1 - r1;
-        if (d3 !== (p * d2) + ((p + 1) * q2)) {
+        if (r3 !== (p * q1) + ((p + 1) * q2)) {
           return [false, "None"];
         }
         if (p < 1 || d2 < 2 || q2 < 1) {
