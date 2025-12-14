@@ -1331,7 +1331,7 @@
         };
 
         let onchange = inputType === 'm' ? ` onchange="handleMChange(${graph_num})"` : "";
-        // onchange += ` oninput="updateDegreeSequenceDisplay(${graph_num})"`
+        onchange += ` oninput="updateDegreeSequenceDisplay(${graph_num})"`;
 
         return `
           <div id="input-${inputType}-${graph_num}" class="hidden">
@@ -1397,6 +1397,7 @@
               <div id="dynamic-q-inputs-${graph_num}" class="hidden">
                 <!-- Dynamic q1 through qm inputs will be created here -->
               </div>
+              <div id="degree-sequence-${graph_num}" style="margin-top: 12px; font-family: 'JetBrains Mono'; color: #667eea;"></div>
             </div>
           </div>
         `;
@@ -1589,48 +1590,46 @@
         }
 
         // Update degree sequence display
-        // updateDegreeSequenceDisplay(graph_num);
+        updateDegreeSequenceDisplay(graph_num);
       }
 
-      // function updateDegreeSequenceDisplay(graph_num) {
-      //   if (!isValidInteger(graph_num)) throwError("graph_num returned an invalid number: " + graph_num);
-      //   // const displayDiv = document.getElementById(`graph-${graph_num}-sequence`);
-      //   // if (!displayDiv) throwError("displayDiv is undefined");
+      function updateDegreeSequenceDisplay(graph_num) {
+        if (!isValidInteger(graph_num)) return;
+        const displayDiv = document.getElementById(`degree-sequence-${graph_num}`);
+        if (!displayDiv) return;
 
-      //   try {
-      //     const graphType = document.getElementById(`graph-type-${graph_num}`).value;
-      //     const transformationType = document.getElementById(`transformation-${graph_num}`).value;
-      //     if (!graphType) throwError("graphType is undefined");
-      //     if (!transformationType) throwError("transformationType is undefined");
+        try {
+          const graphType = document.getElementById(`graph-type-${graph_num}`).value;
+          const transformationType = document.getElementById(`transformation-${graph_num}`).value;
+          if (!graphType) return;
 
-      //     // Only compute when all required fields are filled
-      //     if (!areAllRequiredParamsFilled(graphType, graph_num)) {
-      //       document.getElementById(`graph-${graph_num}-sequence`).innerHTML = "";
-      //       return;
-      //     }
+          // Only compute when all required fields are filled
+          if (!areAllRequiredParamsFilled(graphType, graph_num)) {
+            displayDiv.innerHTML = "";
+            return;
+          }
 
-      //     // Get parameter values for the new signature
-      //     const params = getParameterValues(graph_num);
-      //     if (!params) throwError("params is undefined");
-      //     let degreeSequence = getDegreeSequence(graphType, params, graph_num);
-      //     if (degreeSequence) {
-      //       // Apply transformation
-      //       degreeSequence = applyTransformation(degreeSequence, transformationType, graphType);
-      //       if (degreeSequence) {
-      //         const [text, isGraphUnigraph, distinguishingNumberResult] = generateText(degreeSequence);
-      //         // displayDiv.innerHTML = text;
-      //       } else {
-      //         // displayDiv.innerHTML = "";
-      //       }
-      //     } else {
-      //       displayDiv.innerHTML = "";
-      //     }
-      //   } catch (error) {
-      //     console.error('updateDegreeSequenceDisplay error:', error);
-      //     // If there's an error (incomplete configuration), show placeholder
-      //     // displayDiv.innerHTML = "";
-      //   }
-      // }
+          // Get parameter values
+          const params = getParameterValues(graph_num);
+          if (!params) return;
+
+          let degreeSequence = getDegreeSequence(graphType, params, graph_num);
+          if (degreeSequence) {
+            // Apply transformation
+            degreeSequence = applyTransformation(degreeSequence, transformationType, graphType);
+            if (degreeSequence) {
+              displayDiv.innerHTML = `Degree sequence: ${formatResult(degreeSequence)}`;
+            } else {
+              displayDiv.innerHTML = "";
+            }
+          } else {
+            displayDiv.innerHTML = "";
+          }
+        } catch (error) {
+          console.error('updateDegreeSequenceDisplay error:', error);
+          displayDiv.innerHTML = "";
+        }
+      }
 
       function generateText(degreeSequence, isgSubZero) {
         const [isGraphUnigraph, uniLabel, uniType, uniParams, newDegreeSequence] = isComponent(degreeSequence);
@@ -1668,19 +1667,23 @@
         const [isGraphUnigraph, uniLabel, uniType, uniParams, newDegreeSequence] = isComponent(degreeSequence);
         if (!degreeSequence) throwError("degreeSequence is undefined");
         const gSubZeroAndIsSVG = isgSubZero && uniLabel === "SVG";
-        const degreeSequenceToDisplay = gSubZeroAndIsSVG ? "0^1" : formatResult(newDegreeSequence || degreeSequence);
+        const isSVG = uniLabel === "SVG";
+        const degreeSequenceToUse = newDegreeSequence || degreeSequence;
+        const degreeSequenceToDisplay = gSubZeroAndIsSVG ? "0^1" : formatResult(degreeSequenceToUse);
         const degreeSequenceText = "Degree Sequence: " + degreeSequenceToDisplay + "<br>";
         const hasCompactedParam = uniParams.compacted !== undefined;
         const isCompacted = hasCompactedParam && uniParams.compacted;
         const paramsString = paramsText(uniParams, gSubZeroAndIsSVG);
         const typeString = typeText(uniType, uniLabel, isCompacted);
-        const cliqueNumberResult = gSubZeroAndIsSVG ? 1 : cliqueNumber(uniLabel, uniParams, degreeSequence);
-        const cliqueNumberString = "Clique Number: " + cliqueNumberResult + "<br>";
-        const independenceNumberResult = independenceNumber(uniLabel, uniParams, degreeSequence);
-        const independenceNumberString = "Independence Number: " + independenceNumberResult + "<br>";
-        const numVertices = countVertices(degreeSequence);
+        const cliqueNumberResult = gSubZeroAndIsSVG ? 1 : cliqueNumber(uniLabel, uniParams, degreeSequenceToUse);
+        const cliqueNumberHeader = isgSubZero ? "Clique Number: " : "|A|: ";
+        const cliqueNumberString = cliqueNumberHeader + cliqueNumberResult + "<br>";
+        const independenceNumberResult = independenceNumber(uniLabel, uniParams, degreeSequenceToUse);
+        const independenceNumberHeader = isgSubZero ? "Independence Number: " : "|B|: ";
+        const independenceNumberString = independenceNumberHeader + independenceNumberResult + "<br>";
+        const numVertices = countVertices(degreeSequenceToUse);
         const vertexCoverNumberString = "Vertex Cover Number: " + (numVertices - independenceNumberResult) + "<br>";
-        const chromaticNumberString = "Chromatic Number: " + (uniLabel === "C5" ? cliqueNumberResult + 1 : uniLabel === "SVG" ? 1 : cliqueNumberResult);
+        const chromaticNumberString = "Chromatic Number: " + (uniLabel === "C5" ? cliqueNumberResult + 1 : isSVG ? 1 : cliqueNumberResult);
         const text = isGraphUnigraph ? `${typeString}${paramsString}${degreeSequenceText}${cliqueNumberString}${independenceNumberString}${vertexCoverNumberString}${chromaticNumberString}` : `${degreeSequenceText}`;
         return [text, isGraphUnigraph, cliqueNumberResult, independenceNumberResult];
       }
@@ -1820,7 +1823,7 @@
             const inputDiv = document.createElement('div');
             inputDiv.innerHTML = `
               <label for="s2-p${i}-${graph_num}">Enter p${i}:</label>
-              <input type="number" id="s2-p${i}-${graph_num}" name="p${i}" min="1">
+              <input type="number" id="s2-p${i}-${graph_num}" name="p${i}" min="1" oninput="updateDegreeSequenceDisplay(${graph_num})">
             `;
             DYNAMIC_P.appendChild(inputDiv);
           }
@@ -1830,7 +1833,7 @@
             const inputDiv = document.createElement('div');
             inputDiv.innerHTML = `
               <label for="s2-q${i}-${graph_num}">Enter q${i}:</label>
-              <input type="number" id="s2-q${i}-${graph_num}" name="q${i}" min="1">
+              <input type="number" id="s2-q${i}-${graph_num}" name="q${i}" min="1" oninput="updateDegreeSequenceDisplay(${graph_num})">
             `;
             DYNAMIC_Q.appendChild(inputDiv);
           }
@@ -2136,6 +2139,9 @@
         }
         let resultString = "";
         const numKeys = Object?.keys(hashmap)?.length;
+        if (numKeys === 0) {
+          return "null";
+        }
         if (!isValidInteger(numKeys)) throwError("numKeys returned an invalid integer: " + numKeys);
         Object?.keys(hashmap)?.sort((a, b) => b - a).forEach((key, index) => {
           resultString += `${key}^${hashmap[key]} `;
@@ -2194,7 +2200,7 @@
         if (result.A !== undefined || result.B !== undefined) {
           let resultString = "";
           resultString += formatHashmap(result.A);
-          resultString += "; ";
+          resultString += " ; ";
           resultString += formatHashmap(result.B);
           return resultString;
         } else {
@@ -2494,14 +2500,14 @@
         let result = "";
         let isUnigraph = true;
         let distinguishingNumber = 0;
-        let index = 1;
+        let index = 0;
         let fixingNumber = 0;
         components.forEach(component => {
           const [text, isGraphUnigraph, distinguishingNumberResult, fixingNumberResult] = generateText(component, component === components[0]);
           isUnigraph = isUnigraph && isGraphUnigraph;
           distinguishingNumber = Math.max(distinguishingNumber, distinguishingNumberResult);
           fixingNumber += fixingNumberResult;
-          result += `Component ${index}:<br>${text}`;
+          result += `G<sub>${index}</sub>:<br>${text}`;
           if (index < components.length) {
             result += "<br><br>";
           }
@@ -2513,11 +2519,11 @@
       function formatComponentsBasic(components) {
         let result = "";
         let isUnigraph = true;
-        let index = 1;
+        let index = 0;
         components.forEach(component => {
           const [text, isGraphUnigraph] = generateTextBasic(component, component === components[0]);
           isUnigraph = isUnigraph && isGraphUnigraph;
-          result += `Component ${index}:<br>${text}`;
+          result += `G<sub>${index}</sub>:<br>${text}`;
           if (index < components.length) {
             result += "<br><br>";
           }
@@ -2531,13 +2537,13 @@
         let isUnigraph = true;
         let cliqueNumber = 0;
         let independenceNumber = 0;
-        let index = 1;
+        let index = 0;
         components.forEach(component => {
           const [text, isGraphUnigraph, cliqueNumberResult, independenceNumberResult] = generateTextCliqueNumbers(component, component === components[0]);
           isUnigraph = isUnigraph && isGraphUnigraph;
           cliqueNumber += cliqueNumberResult;
           independenceNumber += independenceNumberResult;
-          result += `Component ${index}:<br>${text}`;
+          result += `G<sub>${index}</sub>:<br>${text}`;
           if (index < components.length) {
             result += "<br><br>";
           }
