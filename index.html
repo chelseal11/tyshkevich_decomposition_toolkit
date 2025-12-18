@@ -963,7 +963,7 @@
           distinguishingNumber: (m, l) => {
             if (!isValidInteger(m)) throwError("Invalid parameter m: " + m);
             if (!isValidInteger(l)) throwError("Invalid parameter l: " + l);
-            return Math.ceil(GRAPH_CONFIG['mK2'].distinguishingNumber(m), l)
+            return Math.max(GRAPH_CONFIG['mK2'].distinguishingNumber(m), l)
           },
           fixingNumber: (m, l) => {
             if (!isValidInteger(m)) throwError("Invalid parameter m: " + m);
@@ -1065,7 +1065,7 @@
               const denominator = p_factorial * c_minus_p_factorial;
               if (denominator === 0) return;
               const result = Math.round(c_factorial / denominator);
-              if (result >= q ) return result;
+              if (result >= q ) return c;
             }
           },
           fixingNumber: (p, q) => {
@@ -1944,8 +1944,6 @@
         // Display result in the result div
         const resultDivShort = document.getElementById('composition-result-short');
         setDisplayContent(resultDivShort, formatResult(result));
-        // const resultDivLong = document.getElementById('composition-result-long');
-        // setDisplayContent(resultDivLong, longFormatResult(result));
       }
 
       function getDegreeSequence(type, params, graph_num) {
@@ -2006,7 +2004,7 @@
         // Validate original parameters
         for (const validation of config.validation) {
           const value = paramValues[validation.param];
-          if (!value) throwError("value is undefined");
+          if (value === undefined || value === null) throwError("value is undefined");
           const displayName = validation.displayName || validation.param;
 
           if (!isValidNumber(value, validation.min)) {
@@ -2190,44 +2188,6 @@
         return resultString;
       }
 
-      function longFormatResult(result) {
-        if (result === undefined) {
-          throwError("result is undefined");
-          return "";
-        }
-
-        if (result.A !== undefined || result.B !== undefined) {
-          let resultString = "";
-          resultString += longFormatResult(result.A);
-          resultString += "; ";
-          resultString += longFormatResult(result.B);
-          return resultString;
-        } else {
-          return longFormatResult(result);
-        }
-      }
-
-      function longFormatResult(result) {
-        if (result === undefined) {
-          throwError("result is undefined");
-          return "";
-        }
-        let resultString = "";
-        const keys = Object.keys(result);
-        keys.sort((a, b) => b - a);
-        for (let i = 0; i < keys.length; i++) {
-          const key = keys[i];
-          const value = result[key];
-          for (let j = 1; j <= value; j++) {
-            resultString += `${key}`;
-            if (j !== value || i !== keys.length - 1) {
-              resultString += ", ";
-            }
-          }
-        }
-        return resultString;
-      }
-
       function formatResult(result) {
         if (result === undefined || result === null) {
           throwError("result is undefined or null");
@@ -2295,7 +2255,7 @@
       function showDecompose() {
         document.getElementById('about').classList.add('hidden');
         document.getElementById('compose-unigraphs').classList.add('hidden');
-        document.getElementById('random-unigraph-generator').classList. add('hidden');
+        document.getElementById('random-unigraph-generator').classList.add('hidden');
         document.getElementById('compose-graphs').classList.add('hidden');
         document.getElementById('decompose-graph').classList.remove('hidden');
         document.getElementById('decompose-graph-v2').classList.add('hidden');
@@ -3478,7 +3438,7 @@
         if (!degreeSequence) throwError("degreeSequence is undefined");
         switch (uniLabel) {
           case 'C5':
-            return 1;
+            return 2;
           case 'mK2':
             return uniParams.m;
           case 'U2':
