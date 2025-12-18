@@ -1441,11 +1441,8 @@
         showInputs(1);
         showInputs(2);
 
-        // Initialize display divs with placeholder text
         const resultDivShort = document.getElementById('composition-result-short');
-        // const resultDivLong = document.getElementById('composition-result-long');
         setDisplayContent(resultDivShort, "");
-        // setDisplayContent(resultDivLong, "");
       }
 
       function updateUnigraphLabels() {
@@ -1673,7 +1670,8 @@
         const [isGraphUnigraph, uniLabel, uniType, uniParams, newDegreeSequence] = isComponent(degreeSequence);
         const degSequenceToDisplay = newDegreeSequence || degreeSequence;
         if (!degSequenceToDisplay) throwError("degSequenceToDisplay is undefined");
-        const gSubZeroAndIsSVG = isgSubZero && uniLabel === "SVG" && countVertices(degSequenceToDisplay) === 1;
+        const isSVG = uniLabel === "SVG";
+        const gSubZeroAndIsSVG = isgSubZero && isSVG && countVertices(degSequenceToDisplay) === 1;
         const degreeSequenceText = "Degree Sequence: " + (gSubZeroAndIsSVG ? "0^1" : formatResult(degSequenceToDisplay)) + "<br>";
         const hasCompactedParam = uniParams.compacted !== undefined;
         const isCompacted = hasCompactedParam && uniParams.compacted;
@@ -1681,7 +1679,7 @@
         const distinguishingNumberResult = distinguishingNumber(uniLabel, uniType, uniParams, degSequenceToDisplay);
         const hasDistinguishingNumber = distinguishingNumberResult !== undefined;
         const distinguishingNumberString = hasDistinguishingNumber ? "Distinguishing Number: " + distinguishingNumberResult + "<br>" : "";
-        const typeString = typeText(uniType, uniLabel, isCompacted);
+        const typeString = typeText(uniType, uniLabel, isCompacted, isSVG);
         const fixingNumberResult = fixingNumber(uniLabel, uniType, uniParams, degSequenceToDisplay);
         const hasFixingNumber = fixingNumberResult !== undefined;
         const fixingNumberString = hasFixingNumber ? "Fixing Number: " + fixingNumberResult + "<br>" : "";
@@ -1691,13 +1689,14 @@
       // Basic version for v1: no distinguishing/fixing numbers
       function generateTextBasic(degreeSequence, isgSubZero) {
         const [isGraphUnigraph, uniLabel, uniType, uniParams, newDegreeSequence] = isComponent(degreeSequence);
-        const gSubZeroAndIsSVG = isgSubZero && uniLabel === "SVG";
+        const isSVG = uniLabel === "SVG";
+        const gSubZeroAndIsSVG = isgSubZero && isSVG;
         const degreeSequenceToDisplay = gSubZeroAndIsSVG ? "0^1" : formatResult(newDegreeSequence || degreeSequence);
         const degreeSequenceText = "Degree Sequence: " + degreeSequenceToDisplay + "<br>";
         const hasCompactedParam = uniParams.compacted !== undefined;
         const isCompacted = hasCompactedParam && uniParams.compacted;
         const paramsString = paramsText(uniParams, gSubZeroAndIsSVG);
-        const typeString = typeText(uniType, uniLabel, isCompacted);
+        const typeString = typeText(uniType, uniLabel, isCompacted, isSVG);
         return [`${typeString}${paramsString}${degreeSequenceText}`, isGraphUnigraph];
       }
 
@@ -1712,7 +1711,7 @@
         const hasCompactedParam = uniParams.compacted !== undefined;
         const isCompacted = hasCompactedParam && uniParams.compacted;
         const paramsString = paramsText(uniParams, gSubZeroAndIsSVG);
-        const typeString = typeText(uniType, uniLabel, isCompacted);
+        const typeString = typeText(uniType, uniLabel, isCompacted, isSVG);
         const cliqueNumberResult = gSubZeroAndIsSVG ? 1 : cliqueNumber(uniLabel, uniParams, degreeSequenceToUse);
         const cliqueNumberHeader = isgSubZero ? "Clique Number: " : "|A|: ";
         const cliqueNumberString = cliqueNumberHeader + cliqueNumberResult + "<br>";
@@ -1753,13 +1752,13 @@
         }
       }
 
-      function typeText(uniType, uniLabel, isCompacted) {
+      function typeText(uniType, uniLabel, isCompacted, isSVG) {
         const hasType = uniType != "None";
         const hasLabel = uniLabel != "None";
         if (hasType) {
           let text = `Type: `;
           text += isCompacted ? "Compacted " : "";
-          text += hasType ? `${uniType} ` : "";
+          text += hasType && !isSVG ? `${uniType} ` : "";
           text += hasLabel ? `${GRAPH_LABELS[uniLabel]}` : "";
           text += "<br>";
           return text;
@@ -2714,6 +2713,8 @@
         if (firstBKeys.length !== 0 && secondAKeys.length !== 0) {
           return {A: {1: 2}, B: {}};
         }
+        throwError("firstComponent and secondComponent are not compatible");
+        return null;
       }
 
       function decompose(input) {
@@ -3160,7 +3161,7 @@
         } else if (dA.length === 1 && dB.length === 0) {
           const d1 = Number(dA[0]);
           const r1 = rA[0];
-          if (d1 == 0 || r1 == 1) {
+          if (d1 == 0 && r1 == 1) {
             return [true, {partition: "K1", compacted: false}];
           }
           if (r1 > d1 && r1 - d1 == 1) {
@@ -3169,7 +3170,7 @@
         } else if (dA.length === 0 && dB.length === 1) {
           const d2 = Number(dB[0]);
           const r2 = rB[0];
-          if (d2 == 0 || r2 == 1) {
+          if (d2 == 0 && r2 == 1) {
             return [true, {partition: "S1", compacted: false}];
           }
           if (d2 == 2 && r2 > 1) {
