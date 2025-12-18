@@ -525,7 +525,17 @@
       <h3>Available Tools</h3>
 
       <div style="margin-bottom: 20px;">
-        <h4>1. Compose Unigraphs</h4>
+
+        <div style="margin-bottom: 20px;">
+          <h4>1. Compose Graphs</h4>
+          <p>
+            Compose two graphs by their degree sequences. The second graph must be a split graph.
+            Enter degree sequences in the format: degree^count (e.g., "5^2, 4^3, 1^1" represents
+            2 vertices of degree 5, 3 vertices of degree 4, and 1 vertex of degree 1).
+          </p>
+        </div>
+
+        <h4>2. Compose Unigraphs</h4>
         <p>
           Compute the composition of two unigraphs. Configure two graphs using various graph types
           (C₅, mK₂, U2, U3, split graphs, etc.) and their parameters, then compute their composition.
@@ -535,7 +545,7 @@
       </div>
 
       <div style="margin-bottom: 20px;">
-        <h4>2. Random Unigraph Generator</h4>
+        <h4>3. Random Unigraph Generator</h4>
         <p>
           Generate random unigraphs with specified properties. Choose the number of vertices and
           the number of basic components, and the tool will generate random unigraph components
@@ -544,7 +554,7 @@
       </div>
 
       <div style="margin-bottom: 20px;">
-        <h4>3. Graph Decomposition and Unigraph Detection Tool</h4>
+        <h4>4. Graph Decomposition and Unigraph Detection Tool</h4>
         <p>
           Decompose a graph (provided as a degree sequence) into its basic components. The tool
           will determine if the graph is a unigraph and show the full decomposition into components.
@@ -552,7 +562,7 @@
       </div>
 
       <div style="margin-bottom: 20px;">
-        <h4>4. Distinguishing Number and Fixing Number</h4>
+        <h4>5. Distinguishing Number and Fixing Number</h4>
         <p>
           Similar to the decomposition tool, but also computes the distinguishing number and fixing
           number for the graph. The tool provides the compacted version of the decomposition and
@@ -561,21 +571,12 @@
       </div>
 
       <div style="margin-bottom: 20px;">
-        <h4>5. Clique size, independence number, vertex cover number and chromatic number</h4>
+        <h4>6. Clique size, independence number, vertex cover number and chromatic number</h4>
         <p>
           Decompose a graph (provided as a degree sequence) into its basic components and compute
           fundamental graph properties: clique size, independence number, vertex cover number, and
           chromatic number. The tool determines if the graph is a unigraph and calculates these key
           structural characteristics.
-        </p>
-      </div>
-
-      <div style="margin-bottom: 20px;">
-        <h4>6. Compose Graphs</h4>
-        <p>
-          Compose two graphs by their degree sequences. The second graph must be a split graph.
-          Enter degree sequences in the format: degree^count (e.g., "5^2, 4^3, 1^1" represents
-          2 vertices of degree 5, 3 vertices of degree 4, and 1 vertex of degree 1).
         </p>
       </div>
 
@@ -603,6 +604,22 @@
       <div style="margin-bottom: 15px;">
         <strong>Degree Sequence:</strong> A list of vertex degrees in a graph, written in
         descending order.
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <strong>Clique size:</strong> The size of the maximum clique in the graph
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <strong>Independence number:</strong> The size of the maximum independent set
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <strong>Vertex cover number:</strong> The minimum number of vertices needed to cover all edges
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <strong>Chromatic number:</strong> The minimum number of colors needed for proper vertex coloring
       </div>
 
       <h3>Getting Started</h3>
@@ -839,12 +856,14 @@
           <h2>Graph Composition Tool</h2>
           <p>Compose a graph by degree sequence:</p>
 
-          <div style="margin-bottom: 20px; margin-top: 20px;">
-            <input type="text" id="compose-graphs-input-1" placeholder="Enter a graph to compose... Example: 5^2, 4^3, 1^1">
+          <div style="margin-bottom: 20px; margin-top: 20px; display: flex; gap: 10px; align-items: center;">
+            <span style="font-weight: bold; min-width: 30px;">G<sub>0</sub></span>
+            <input type="text" id="compose-graphs-input-1" placeholder="Enter a graph to compose... Example: 5^2, 4^3, 1^1" style="flex: 1;">
           </div>
 
           <div id="compose-graphs-inputs-container">
             <div class="compose-graph-input-wrapper" style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+              <span class="graph-label" style="font-weight: bold; min-width: 30px;">G<sub>1</sub></span>
               <input type="text" id="compose-graphs-input-2" placeholder="Enter a split graph to compose... Example: 2^1 ; 1^1" style="flex: 1;">
             </div>
           </div>
@@ -872,14 +891,15 @@
           <ul>
             <li>Enter the first graph's degree sequence (format: degree^count)</li>
             <li>Enter the second graph's degree sequence (must be a split graph)</li>
-            <li>Click "+" to add more graphs to compose (optional)</li>
             <li>For split graphs, use semicolon to separate partitions: "A ; B"</li>
             <li>Example: "2^1 ; 1^1" means partition A has 1 vertex of degree 2, partition B has 1 vertex of degree 1</li>
+            <li>Click "+" to add more graphs to compose (optional)</li>
+            <li>Click "x" to remove a graph from the composition</li>
             <li>Click "Compose Graphs" to compute the composition</li>
           </ul>
           <p>
             This tool is useful for applying the same composition operation to graphs regardless of if they're unigraphs.
-            Graphs are composed sequentially from left to right: G₁ ∘ G₂ ∘ G₃ ∘ ...
+            Graphs are composed sequentially from left to right: G<sub>0</sub> ∘ G<sub>1</sub> ∘ G<sub>2</sub> ∘ ...
           </p>
           <p>
             <strong>Note:</strong> All graphs after the first must be valid split graphs for the composition to work.
@@ -2878,15 +2898,33 @@
       // Track the number of graph inputs for composition
       let composeGraphInputCount = 2;
 
+      function updateGraphLabels() {
+        const container = document.getElementById('compose-graphs-inputs-container');
+        const wrappers = container.querySelectorAll('.compose-graph-input-wrapper');
+        wrappers.forEach((wrapper, index) => {
+          const label = wrapper.querySelector('.graph-label');
+          if (label) {
+            label.innerHTML = `G<sub>${index + 1}</sub>`;
+          }
+        });
+      }
+
       function addComposeGraphInput() {
         composeGraphInputCount++;
         const container = document.getElementById('compose-graphs-inputs-container');
+        const currentCount = container.querySelectorAll('.compose-graph-input-wrapper').length;
         const wrapper = document.createElement('div');
         wrapper.className = 'compose-graph-input-wrapper';
         wrapper.style.marginBottom = '20px';
         wrapper.style.display = 'flex';
         wrapper.style.gap = '10px';
         wrapper.style.alignItems = 'center';
+
+        const label = document.createElement('span');
+        label.className = 'graph-label';
+        label.style.fontWeight = 'bold';
+        label.style.minWidth = '30px';
+        label.innerHTML = `G<sub>${currentCount + 1}</sub>`;
 
         const input = document.createElement('input');
         input.type = 'text';
@@ -2912,8 +2950,10 @@
         removeBtn.style.justifyContent = 'center';
         removeBtn.onclick = function() {
           wrapper.remove();
+          updateGraphLabels();
         };
 
+        wrapper.appendChild(label);
         wrapper.appendChild(input);
         wrapper.appendChild(removeBtn);
         container.appendChild(wrapper);
