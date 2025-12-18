@@ -514,12 +514,13 @@
     </div>
 
     <div id="about">
-      <h2>Unigraph Composer - About</h2>
+      <h2>Tyshkevich Decomposition Toolkit - About</h2>
 
       <h3>Overview</h3>
       <p>
-        This tool provides a comprehensive suite for working with unigraphs and graph composition.
-        Unigraphs are graphs that are completely determined by their degree sequence.
+        This toolkit provides a comprehensive suite for working with Tyshkevich decomposition and unigraph composition.
+        Tyshkevich decomposition is a method for decomposing a graph into indecomposable components.
+        Unigraph composition is a method for composing two or more graphs into a single graph.
       </p>
 
       <h3>Available Tools</h3>
@@ -648,7 +649,6 @@
 
           <div id="result-container" class="static_height">
             <div id="composition-result-short" data-placeholder="Click 'Compute Composition' to see the result here..."></div>
-            <!-- <div id="composition-result-long" style="min-height: 20px; font-family: monospace; background-color: #f5f5f5; border: 1px solid #ccc; padding: 15px; border-radius: 4px; color: #666;" data-placeholder="Click 'Compute Composition' to see the result here..."></div> -->
           </div>
         </div>
 
@@ -659,10 +659,10 @@
           </p>
           <p><strong>How to use:</strong></p>
           <ul>
-            <li>Select a graph type for Graph 1 from the dropdown (e.g., C₅, mK₂, U2, U3, or split graphs)</li>
+            <li>Select a graph type for G<sub>0</sub> from the dropdown (e.g., C₅, mK₂, U2, U3, or split graphs)</li>
             <li>Enter the required parameters for your chosen graph type</li>
-            <li>Select a graph type for Graph 2 (must be a split graph)</li>
-            <li>Enter parameters for Graph 2</li>
+            <li>Select a graph type for G<sub>1</sub> (must be a split graph)</li>
+            <li>Enter parameters for G<sub>1</sub></li>
             <li>Optionally apply transformations (inverse, complement) to either graph</li>
             <li>Click "+" to add more graphs to compose (optional)</li>
             <li>Click "Compute Composition" to see the resulting degree sequence</li>
@@ -1414,7 +1414,7 @@
 
         return `
           <div class="graph-section">
-            <h3>Graph ${graph_num}</h3>
+            <h3 class="unigraph-label">G<sub>${graph_num - 1}</sub></h3>
             <div class="static_height">
               ${generateSelectHTML(graph_num)}
               ${generateTransformationHTML(graph_num)}
@@ -1448,9 +1448,18 @@
         // setDisplayContent(resultDivLong, "");
       }
 
+      function updateUnigraphLabels() {
+        const dropdownContainer = document.querySelector('.dropdown-container');
+        const labels = dropdownContainer.querySelectorAll('.unigraph-label');
+        labels.forEach((label, index) => {
+          label.innerHTML = `G<sub>${index}</sub>`;
+        });
+      }
+
       function addGraph() {
         graphCount++;
         const dropdownContainer = document.querySelector('.dropdown-container');
+        const currentCount = dropdownContainer.querySelectorAll('.graph-section').length;
 
         // Create a wrapper for the graph section and remove button
         const graphWrapper = document.createElement('div');
@@ -1459,7 +1468,7 @@
 
         // Create a temporary div to hold the new graph HTML
         const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = generateGraphContainerHTML(graphCount);
+        tempDiv.innerHTML = generateGraphContainerHTML(currentCount + 1);
 
         // Create remove button
         const removeBtn = document.createElement('button');
@@ -1485,6 +1494,7 @@
         removeBtn.onclick = function() {
           graphWrapper.remove();
           graphCount--;
+          updateUnigraphLabels();
         };
 
         // Append the graph section and remove button to wrapper
@@ -2384,7 +2394,7 @@
             const resultDiv = document.getElementById(`random-unigraph-${i + 1}`);
             if (!resultDiv) throwError("resultDiv" + (i + 1) + " is undefined");
             if (resultDiv) {
-              const label = `Graph ${i + 1}`;
+              const label = `G<sub>${i}</sub>`;
               const numVerticesText = `Number of vertices: ${partitionNumVertices}`;
               const typeText = `Type: ${GRAPH_LABELS[randomUnigraph.graphType]}`;
               const paramsText = `${Object.entries(randomUnigraph.params).map(([param, value]) => {
@@ -3263,7 +3273,8 @@
         if (summationOfpTimesq !== rB[0]) {
           return [false, "None"];
         }
-        return [true, {p: p, q: q}];
+        const m = orderedDAs.length;
+        return [true, {m: m, p: p, q: q}];
       }
 
       function isS3(input) {
