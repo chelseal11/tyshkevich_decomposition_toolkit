@@ -532,7 +532,8 @@
           <p>
             Compose two graphs by their degree sequences. The second graph must be a split graph.
             Enter degree sequences in the format: degree^count (e.g., "5^2, 4^3, 1^1" represents
-            2 vertices of degree 5, 3 vertices of degree 4, and 1 vertex of degree 1).
+            2 vertices of degree 5, 3 vertices of degree 4, and 1 vertex of degree 1). The composition
+            operation is described in the key concepts section.
           </p>
         </div>
 
@@ -541,7 +542,7 @@
           Compute the composition of two unigraphs. Configure two graphs using various graph types
           (C₅, mK₂, U2, U3, split graphs, etc.) and their parameters, then compute their composition.
           You can also apply transformations (inverse, complement, complement of inverse) to each graph
-          before composing them.
+          before composing them. The composition operation is described in the key concepts section.
         </p>
       </div>
 
@@ -550,7 +551,7 @@
         <p>
           Generate random unigraphs with specified properties. Choose the number of vertices and
           the number of basic components, and the tool will generate random unigraph components
-          and compose them into a final result.
+          and compose them into a final result. The composition operation is described in the key concepts section.
         </p>
       </div>
 
@@ -559,6 +560,7 @@
         <p>
           Decompose a graph (provided as a degree sequence) into its basic components. The tool
           will determine if the graph is a unigraph and show the full decomposition into components.
+          The decomposition operation is described in the key concepts section.
         </p>
       </div>
 
@@ -568,6 +570,7 @@
           Similar to the decomposition tool, but also computes the distinguishing number and fixing
           number for the graph. The tool provides the compacted version of the decomposition and
           the distinguishing number and fixing number of each component.
+          The decomposition operation is described in the key concepts section.
         </p>
       </div>
 
@@ -577,7 +580,7 @@
           Decompose a graph (provided as a degree sequence) into its basic components and compute
           fundamental graph properties: clique size, independence number, vertex cover number, and
           chromatic number. The tool determines if the graph is a unigraph and calculates these key
-          structural characteristics.
+          structural characteristics. The decomposition operation is described in the key concepts section.
         </p>
       </div>
 
@@ -585,8 +588,16 @@
 
       <div style="margin-bottom: 15px;">
         <strong>Degree Sequence:</strong> The vertex degrees of a graph listed in decreasing order.
-        <!-- A list of vertex degrees in a graph, written in
-        descending order. -->
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <strong>Graph Composition:</strong> The operation of combining two graphs into a single graph via adding
+        edges between every vertex in G<sub>0</sub> and partition A (the clique) in G<sub>1</sub>.
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <strong>Graph Decomposition:</strong> The operation of converting a graph into its indecomposable components by
+        reversing the graph composition operation.
       </div>
 
       <div style="margin-bottom: 15px;">
@@ -621,10 +632,8 @@
       </div>
 
       <div style="margin-bottom: 15px;">
-        <strong>Fixing Number:</strong> The minimum size of a set of vertices so that the trivial automorphism is the only automorphism
-        that fixes every element in the set is the trivial automorphism.
-        <!-- that is fixed by only
-        the trivial automorphism. -->
+        <strong>Fixing Number:</strong> The minimum size of a set of vertices so that the trivial automorphism is the
+        only automorphism that fixes every element in the set is the trivial automorphism.
       </div>
 
 
